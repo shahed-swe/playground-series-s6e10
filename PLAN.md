@@ -25,6 +25,8 @@
 | `lgb_te_lr0.03` | 0.96023 | — | **Ablation: TE alone = +0.00111.** Teacher + freq contribute the remaining +0.00036. |
 | `cat_nofe_lr0.1` | 0.95862 | — | CatBoost, plain features, 18 min CPU. Weak alone; needs categorical numeric copies + GPU to shine. |
 | `xgb_te_freq_teacher` | killed | — | overlapped with two other runs; thrashed past the 30-min cap. Rerun alone. |
+| **`cat_crosses_teacher`** (Kaggle GPU) | **0.96117** | — | **Best single.** Ratings categorical + categorical numeric copies + 39 rating×context crosses + teacher logit. 40 min on T4; all folds ≥0.9602. |
+| `lgb_*_digits` | killed ×2 | — | starved: machine load 15 from Chrome/NordVPN/VS Code, not from training. Retry when the machine is free, or on Kaggle. |
 | `cat_fe_lr0.05` | killed | — | 2/5 folds (0.95866, 0.95755) in 14 min under CPU contention; would have hit the 30-min limit. Relaunched alone, no features, lr 0.1. |
 
 Leaderboard top: 0.96177. Gap from baseline LB: **0.0034**.
@@ -74,8 +76,10 @@ is native target statistics doing the TE automatically.
 
 ## Compute note
 Three concurrent trainings with `num_threads=-1` thrash the CPU: a 3-min LightGBM
-run hit the 30-min background cap. **Max two at once locally.** CatBoost with
-categorical numerics belongs on Kaggle GPU.
+run hit the 30-min background cap. **Max two at once locally.** Then, on 6 Oct
+afternoon, load averaged ~15 from Chrome / NordVPN / VS Code alone and even a
+*single* 3-min run could not finish in 30. **Heavy training now goes to Kaggle
+GPU** — the CatBoost recipe ran there in 40 min while the laptop starved.
 
 ## Constraints
 - Leaderboard is tight (top 8 within 0.00005). Trust CV; use LB sparingly.
