@@ -25,11 +25,41 @@ source here is *Airline Passenger Satisfaction* (teejmahal20), fetched into
 `data/original/`. Appending the original rows to training is a standard
 Playground gain and the first thing to test.
 
+## Results so far
+
+| Model | CV AUC | Public LB |
+|---|---|---|
+| LightGBM baseline | 0.95903 | 0.95840 |
+| LightGBM + in-fold TE + freq + teacher | 0.96059 | 0.96017 |
+| CatBoost crosses + teacher (Kaggle GPU) | 0.96117 | — |
+| **LR stack, 8 members (nested CV)** | **0.96121** | **0.96056** |
+
+Rank **350 / 936** as of 6 Oct. Leader 0.96177.
+
+## What moved the score
+
+Not what I expected. Hand-crafted rating aggregates *hurt* (−0.00023), ratings
+as categorical did nothing, original rows appended hurt (−0.00035). What worked,
+all measured on the same folds and all first reported by others on the forum:
+
+- **Cross-fitted target encoding of exact Flight Distance / Age / delays:**
+  +0.00111. The synthetic generator leaves a learnable per-value target rate.
+- **A teacher model trained on the original dataset, used as a logit feature:**
+  part of a further +0.00036. Rows mislead because the generator drifted Flight
+  Distance and Age; a model trained on them still transfers.
+- **CatBoost with categorical copies of the numerics + 39 rating × context
+  crosses** (wangxintong111): 0.96117 — CatBoost's ordered target statistics do
+  the target encoding natively.
+- **Logistic regression on logits** as the stacker, scored by nested CV.
+
+Verified clean: zero duplicate rows within or across train/test, no id-ordering
+leak. The leaderboard is genuine modelling.
+
 ## Leaderboard shape
 
-Top 8 public scores span **0.96172–0.96177**. This is a tabular GBDT problem
-where the field converges quickly and rank is decided by tuning, ensembling and
-the original-data trick — not by model architecture.
+Top public scores span **0.96172–0.96177**. The field converges fast; rank is
+decided by target encoding, a teacher, 10 folds, and stacking across model
+families — not by architecture or by hand-crafted features.
 
 ## Layout
 
@@ -42,8 +72,16 @@ submissions/       generated submission files (gitignored)
 
 ## Running
 
-Uses the shared workspace venv one level up:
+Uses the shared workspace venv one level up. Every run shares the same
+`StratifiedKFold(5, shuffle=True, random_state=42)` split — the community
+split — so OOFs are directly comparable and stackable, including with public
+OOF libraries.
 
 ```bash
-../.venv/bin/python src/baseline.py
+../.venv/bin/python src/teacher.py                              # once
+../.venv/bin/python src/experiment.py --model lgb --te --freq --teacher
+../.venv/bin/python src/blend.py                                # rank blend + LR stack
 ```
+
+Heavy models (CatBoost with categorical numerics, 10-fold runs) are Kaggle
+notebooks under `notebooks/`; the laptop is routinely starved by other apps.
