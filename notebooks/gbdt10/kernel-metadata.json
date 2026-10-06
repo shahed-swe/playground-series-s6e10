@@ -1,0 +1,19 @@
+{
+  "id": "shahedtalukder51/s6e10-gbdt-te-10fold",
+  "title": "S6E10 GBDT TE 10-fold",
+  "code_file": "gbdt_te_10fold.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "competition_sources": [
+    "playground-series-s6e10"
+  ],
+  "dataset_sources": [
+    "shahedtalukder51/s6e10-teacher-logits"
+  ],
+  "model_sources": [],
+  "kernel_sources": []
+}

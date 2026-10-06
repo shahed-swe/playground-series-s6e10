@@ -1,6 +1,6 @@
 # Plan — Predicting Airline Satisfaction (PS S6E10)
 
-**Status as of 6 Oct 2026.** Public LB **0.96017**, rank **379 / 884**. Deadline **31 Oct**
+**Status as of 6 Oct 2026.** Public LB **0.96056**, rank **350 / 936**. Deadline **31 Oct**
 (25 days). 10 submissions/day, max team size 3, file-upload submissions.
 
 ## Done
@@ -26,10 +26,11 @@
 | `cat_nofe_lr0.1` | 0.95862 | — | CatBoost, plain features, 18 min CPU. Weak alone; needs categorical numeric copies + GPU to shine. |
 | `xgb_te_freq_teacher` | killed | — | overlapped with two other runs; thrashed past the 30-min cap. Rerun alone. |
 | **`cat_crosses_teacher`** (Kaggle GPU) | **0.96117** | — | **Best single.** Ratings categorical + categorical numeric copies + 39 rating×context crosses + teacher logit. 40 min on T4; all folds ≥0.9602. |
+| **`stack_lr`** (8 members, nested CV) | **0.96121** | **0.96056** | LR on logits; CatBoost weight 0.78. +0.00004 over CatBoost alone — GBDT members saturated. |
 | `lgb_*_digits` | killed ×2 | — | starved: machine load 15 from Chrome/NordVPN/VS Code, not from training. Retry when the machine is free, or on Kaggle. |
 | `cat_fe_lr0.05` | killed | — | 2/5 folds (0.95866, 0.95755) in 14 min under CPU contention; would have hit the 30-min limit. Relaunched alone, no features, lr 0.1. |
 
-Leaderboard top: 0.96177. Gap from baseline LB: **0.0034**.
+Leaderboard top: 0.96177. Gap from current LB: **0.0012**.
 
 ## Next, in order
 1. ~~Baseline~~ done; LB score pending for CV calibration.
