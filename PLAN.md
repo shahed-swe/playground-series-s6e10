@@ -12,15 +12,15 @@
 
 | Run | CV AUC | Public LB | Notes |
 |---|---|---|---|
-| `lgb_base` | **0.95903** | pending | lr 0.05, 127 leaves, ~285 rounds. Submitted 6 Oct. |
-| `lgb_orig` | 0.95868 | — | original rows appended to train folds. **Worse on all 5 folds** (−0.00035 paired). Not submitted. |
+| `lgb_base` | 0.95903 | **0.95840** | lr 0.05, 127 leaves, ~285 rounds. **CV runs ~0.0006 optimistic.** |
+| `lgb_orig` | 0.95868 | — | original rows appended. **Worse on all 5 folds** (−0.00035). |
+| `lgb_origflag` | 0.95906 | — | + `is_original` indicator. +0.00003, mixed fold signs — a wash. **Original data dropped.** |
 
-Leaderboard top: 0.96177. Gap from baseline: 0.0027.
+Leaderboard top: 0.96177. Gap from baseline LB: **0.0034**.
 
 ## Next, in order
 1. ~~Baseline~~ done; LB score pending for CV calibration.
-2. **Original data** — plain append hurt. Test `--orig-flag` (is_original
-   indicator). If that also fails to beat 0.95903, drop the original data.
+2. ~~Original data~~ — tested both ways, no gain. Dropped.
 3. **Feature work** — rating aggregates (mean/std/count of 5s and 0s), delay
    difference, distance per rating; test each against CV.
 4. **Model diversity** — XGBoost + CatBoost alongside LightGBM, rank-average.
