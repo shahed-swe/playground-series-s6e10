@@ -1,0 +1,22 @@
+# Kaggle API token - never commit (lives at ../env in the workspace root)
+env
+.env
+
+# Competition data. CC BY 4.0 permits redistribution, but it is ~100 MB and
+# re-downloadable in seconds, so keep it out of the repo.
+data/
+*.csv
+*.parquet
+
+# Submissions and model artefacts
+submissions/
+*.pkl
+*.joblib
+*.cbm
+*.txt.model
+
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
