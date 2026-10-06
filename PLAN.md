@@ -27,7 +27,9 @@
 | `xgb_te_freq_teacher` | killed | — | overlapped with two other runs; thrashed past the 30-min cap. Rerun alone. |
 | **`cat_crosses_teacher`** (Kaggle GPU) | **0.96117** | — | **Best single.** Ratings categorical + categorical numeric copies + 39 rating×context crosses + teacher logit. 40 min on T4; all folds ≥0.9602. |
 | **`stack_lr`** (8 members, nested CV) | **0.96121** | **0.96056** | LR on logits; CatBoost weight 0.78. +0.00004 over CatBoost alone — GBDT members saturated. |
-| `lgb_*_digits` | killed ×2 | — | starved: machine load 15 from Chrome/NordVPN/VS Code, not from training. Retry when the machine is free, or on Kaggle. |
+| `lgb_te_freq_teacher_digits_f10` (Kaggle CPU) | **0.96076** | — | 10 folds + digits: +0.00017 over the 5-fold run. 25 min for both models. |
+| `xgb_te_freq_teacher_digits_f10` (Kaggle CPU) | **0.96074** | — | XGBoost with TE: 0.95869 → 0.96074. Strong second family. |
+| `lgb_*_digits` (local) | killed ×2 | — | starved: machine load 15 from Chrome/NordVPN/VS Code, not from training. Retry when the machine is free, or on Kaggle. |
 | `cat_fe_lr0.05` | killed | — | 2/5 folds (0.95866, 0.95755) in 14 min under CPU contention; would have hit the 30-min limit. Relaunched alone, no features, lr 0.1. |
 
 Leaderboard top: 0.96177. Gap from current LB: **0.0012**.
@@ -41,7 +43,8 @@ Leaderboard top: 0.96177. Gap from current LB: **0.0012**.
 4. **Model diversity** — XGBoost with TE+teacher locally (rerun alone);
    CatBoost with categorical numeric copies + 39 crosses on **Kaggle GPU**
    (`notebooks/catboost_crosses.py`, pushed 6 Oct). Then LR-on-logits stack.
-5. **Tuning** — Optuna on the best single model once features settle.
+5. ~~10 folds~~ done on Kaggle: +0.00017. **Tuning** — Optuna on CatBoost
+   once seeds are in; GBDT members otherwise saturated.
 
 ## Ruled out (checked, 6 Oct)
 - **No leak.** 0 exact duplicate feature-rows within train or train↔test;
