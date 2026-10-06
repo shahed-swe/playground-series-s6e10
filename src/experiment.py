@@ -135,6 +135,14 @@ def main():
     ap.add_argument("--ratings-cat", action="store_true",
                     help="treat the 0-5 survey ratings as categorical rather than "
                          "ordinal, so trees can isolate 0 = 'not applicable'")
+    ap.add_argument("--te", action="store_true",
+                    help="cross-fitted target encoding of exact Flight Distance, Age "
+                         "and the two delays, computed inside each fold")
+    ap.add_argument("--freq", action="store_true",
+                    help="frequency encoding of the same columns over train+test")
+    ap.add_argument("--teacher", action="store_true",
+                    help="add logit from a model trained on the original dataset "
+                         "(submissions/teacher_train.npy / teacher_test.npy)")
     ap.add_argument("--lr", type=float, default=0.03)
     ap.add_argument("--tag", default=None)
     args = ap.parse_args()
@@ -144,6 +152,23 @@ def main():
     test = pd.read_csv(DATA / "test.csv")
     if args.fe:
         train, test = add_features(train), add_features(test)
+
+    # Columns with many exact values that the synthetic generator ties to the
+    # target. Flight Distance (3,474 values) is the big one.
+    TE_COLS = ["Flight Distance", "Age", "Departure Delay in Minutes",
+               "Arrival Delay in Minutes"]
+
+    if args.teacher:
+        # Teacher saw no PS labels, so its logit needs no cross-fitting.
+        train["teacher_logit"] = np.load(OUT / "teacher_train.npy")
+        test["teacher_logit"] = np.load(OUT / "teacher_test.npy")
+
+    if args.freq:
+        from encoders import frequency_encode
+        for c in TE_COLS:
+            keys_all = pd.concat([train[c], test[c]]).fillna(-1)
+            train[f"freq_{c}"], test[f"freq_{c}"] = frequency_encode(
+                keys_all, train[c].fillna(-1), test[c].fillna(-1))
 
     cats = CATS + (["travel_class", "loyal_travel"] if args.fe else [])
     if args.ratings_cat:
@@ -158,14 +183,27 @@ def main():
 
     X, y = train[features], train[TARGET].astype(int).values
     X_te = test[features]
-    tag = args.tag or f"{args.model}{'_fe' if args.fe else ''}_lr{args.lr}"
-    print(f"{tag}: {len(features)} features, {len(cats)} categorical")
+    flags = "".join(f"_{f}" for f in ("fe", "te", "freq", "teacher") if getattr(args, f))
+    tag = args.tag or f"{args.model}{flags}_lr{args.lr}"
+    print(f"{tag}: {len(features)} features, {len(cats)} categorical"
+          + (f" | +{len(TE_COLS)} target-encoded in-fold" if args.te else ""))
 
     oof, pred, iters = np.zeros(len(X)), np.zeros(len(X_te)), []
     skf = StratifiedKFold(N_FOLDS, shuffle=True, random_state=SEED)
     for fold, (tr, va) in enumerate(skf.split(X, y)):
-        p_va, p_te, it = RUNNERS[args.model](X.iloc[tr], y[tr], X.iloc[va], y[va],
-                                             X_te, cats, args.lr)
+        X_tr, X_va, X_tt = X.iloc[tr], X.iloc[va], X_te
+        if args.te:
+            # Cross-fitted within the training portion of THIS fold only, so no
+            # validation label ever reaches a training-row encoding.
+            from encoders import target_encode
+            X_tr, X_va, X_tt = X_tr.copy(), X_va.copy(), X_te.copy()
+            for c in TE_COLS:
+                k_tr = train[c].iloc[tr].fillna(-1).values
+                k_va = train[c].iloc[va].fillna(-1).values
+                k_tt = test[c].fillna(-1).values
+                e_tr, (e_va, e_tt) = target_encode(k_tr, y[tr], [k_va, k_tt], seed=SEED)
+                X_tr[f"te_{c}"], X_va[f"te_{c}"], X_tt[f"te_{c}"] = e_tr, e_va, e_tt
+        p_va, p_te, it = RUNNERS[args.model](X_tr, y[tr], X_va, y[va], X_tt, cats, args.lr)
         oof[va] = p_va; pred += p_te / N_FOLDS; iters.append(it)
         print(f"  fold {fold}: auc {roc_auc_score(y[va], p_va):.5f}  iters {it}  "
               f"{time.time()-t0:.0f}s", flush=True)
