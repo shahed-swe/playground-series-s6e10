@@ -143,6 +143,11 @@ def main():
     ap.add_argument("--teacher", action="store_true",
                     help="add logit from a model trained on the original dataset "
                          "(submissions/teacher_train.npy / teacher_test.npy)")
+    ap.add_argument("--digits", action="store_true",
+                    help="decimal digits of Flight Distance as features (+0.00036 in "
+                         "the forum ablation; the generator leaks structure in them)")
+    ap.add_argument("--folds", type=int, default=N_FOLDS,
+                    help="CV folds; 10 measured +0.0001-0.0002 over 5")
     ap.add_argument("--lr", type=float, default=0.03)
     ap.add_argument("--tag", default=None)
     args = ap.parse_args()
@@ -162,6 +167,12 @@ def main():
         # Teacher saw no PS labels, so its logit needs no cross-fitting.
         train["teacher_logit"] = np.load(OUT / "teacher_train.npy")
         test["teacher_logit"] = np.load(OUT / "teacher_test.npy")
+
+    if args.digits:
+        for df in (train, test):
+            fd = df["Flight Distance"].astype(int)
+            df["fd_d0"], df["fd_d1"], df["fd_d2"] = fd % 10, (fd // 10) % 10, (fd // 100) % 10
+            df["fd_mod50"], df["fd_mod100"] = fd % 50, fd % 100
 
     if args.freq:
         from encoders import frequency_encode
@@ -183,13 +194,13 @@ def main():
 
     X, y = train[features], train[TARGET].astype(int).values
     X_te = test[features]
-    flags = "".join(f"_{f}" for f in ("fe", "te", "freq", "teacher") if getattr(args, f))
-    tag = args.tag or f"{args.model}{flags}_lr{args.lr}"
+    flags = "".join(f"_{f}" for f in ("fe", "te", "freq", "teacher", "digits") if getattr(args, f))
+    tag = args.tag or f"{args.model}{flags}_lr{args.lr}" + (f"_f{args.folds}" if args.folds != N_FOLDS else "")
     print(f"{tag}: {len(features)} features, {len(cats)} categorical"
           + (f" | +{len(TE_COLS)} target-encoded in-fold" if args.te else ""))
 
     oof, pred, iters = np.zeros(len(X)), np.zeros(len(X_te)), []
-    skf = StratifiedKFold(N_FOLDS, shuffle=True, random_state=SEED)
+    skf = StratifiedKFold(args.folds, shuffle=True, random_state=SEED)
     for fold, (tr, va) in enumerate(skf.split(X, y)):
         X_tr, X_va, X_tt = X.iloc[tr], X.iloc[va], X_te
         if args.te:
@@ -204,7 +215,7 @@ def main():
                 e_tr, (e_va, e_tt) = target_encode(k_tr, y[tr], [k_va, k_tt], seed=SEED)
                 X_tr[f"te_{c}"], X_va[f"te_{c}"], X_tt[f"te_{c}"] = e_tr, e_va, e_tt
         p_va, p_te, it = RUNNERS[args.model](X_tr, y[tr], X_va, y[va], X_tt, cats, args.lr)
-        oof[va] = p_va; pred += p_te / N_FOLDS; iters.append(it)
+        oof[va] = p_va; pred += p_te / args.folds; iters.append(it)
         print(f"  fold {fold}: auc {roc_auc_score(y[va], p_va):.5f}  iters {it}  "
               f"{time.time()-t0:.0f}s", flush=True)
 

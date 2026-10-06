@@ -1,0 +1,19 @@
+{
+  "id": "shahedtalukder51/s6e10-catboost-crosses-gpu",
+  "title": "S6E10 CatBoost Crosses GPU",
+  "code_file": "catboost_crosses.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "competition_sources": [
+    "playground-series-s6e10"
+  ],
+  "dataset_sources": [
+    "shahedtalukder51/s6e10-teacher-logits"
+  ],
+  "model_sources": [],
+  "kernel_sources": []
+}

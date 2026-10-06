@@ -68,6 +68,34 @@ def main():
     pd.DataFrame({"id": ids, TARGET: blend_test}).to_csv(name, index=False)
     print("\nwrote", name.name)
 
+    # Logistic-regression stacker on logits. The stacking thread (kratosyan)
+    # found plain LR beat every fancier combiner. Scored with an outer CV over
+    # the OOF matrix so the stacker's own fit is not evaluated on its training
+    # rows - a stacker tuned on the full OOF would report an inflated number.
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import StratifiedKFold
+
+    def logit(p):
+        p = np.clip(p, 1e-6, 1 - 1e-6); return np.log(p / (1 - p))
+
+    raw_oof = np.column_stack([logit(np.load(OUT / f"oof_{t}.npy")) for t in tags])
+    raw_tst = np.column_stack([logit(np.load(OUT / f"test_{t}.npy")) for t in tags])
+    stack_oof = np.zeros(len(y))
+    for tr, va in StratifiedKFold(5, shuffle=True, random_state=0).split(raw_oof, y):
+        lr = LogisticRegression(C=1.0, max_iter=1000).fit(raw_oof[tr], y[tr])
+        stack_oof[va] = lr.decision_function(raw_oof[va])
+    stack_cv = roc_auc_score(y, stack_oof)
+    lr = LogisticRegression(C=1.0, max_iter=1000).fit(raw_oof, y)
+    print(f"\nLR stacker (nested CV): {stack_cv:.5f}")
+    for t, w in sorted(zip(tags, lr.coef_[0]), key=lambda kv: -abs(kv[1])):
+        print(f"  {t:28s} {w:+.3f}")
+    if stack_cv > best:
+        name = OUT / f"sub_stack_cv{stack_cv:.5f}.csv"
+        pd.DataFrame({"id": ids, TARGET: lr.decision_function(raw_tst)}).to_csv(name, index=False)
+        print("wrote", name.name, "(stacker beat the rank blend)")
+    else:
+        print("rank blend >= stacker; kept the blend")
+
 
 if __name__ == "__main__":
     main()
