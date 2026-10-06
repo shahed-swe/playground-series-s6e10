@@ -6,11 +6,21 @@
 ## Done
 - Entered. Data downloaded and profiled (clean, no real missingness).
 - Original source dataset fetched for the append trick.
+- **Baseline** — LightGBM, 5-fold stratified CV, seed 42, early stopping.
+
+## Results log
+
+| Run | CV AUC | Public LB | Notes |
+|---|---|---|---|
+| `lgb_base` | **0.95903** | pending | lr 0.05, 127 leaves, ~285 rounds. Submitted 6 Oct. |
+| `lgb_orig` | 0.95868 | — | original rows appended to train folds. **Worse on all 5 folds** (−0.00035 paired). Not submitted. |
+
+Leaderboard top: 0.96177. Gap from baseline: 0.0027.
 
 ## Next, in order
-1. **Baseline** — LightGBM, 5-fold stratified CV, native categoricals. Get a
-   CV AUC and a first submission on the board so CV-vs-LB calibration is known.
-2. **Original data append** — add source rows to train, measure CV delta.
+1. ~~Baseline~~ done; LB score pending for CV calibration.
+2. **Original data** — plain append hurt. Test `--orig-flag` (is_original
+   indicator). If that also fails to beat 0.95903, drop the original data.
 3. **Feature work** — rating aggregates (mean/std/count of 5s and 0s), delay
    difference, distance per rating; test each against CV.
 4. **Model diversity** — XGBoost + CatBoost alongside LightGBM, rank-average.

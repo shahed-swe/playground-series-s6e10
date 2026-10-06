@@ -73,16 +73,27 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--original", action="store_true",
                     help="append source-dataset rows to the training folds")
+    ap.add_argument("--orig-flag", action="store_true",
+                    help="like --original, but add an is_original indicator so the "
+                         "model can separate the real and synthetic distributions")
     ap.add_argument("--rounds", type=int, default=5000)
     args = ap.parse_args()
+    use_orig = args.original or args.orig_flag
 
     t0 = time.time()
     train = pd.read_csv(DATA / "train.csv")
     test = pd.read_csv(DATA / "test.csv")
     features = [c for c in train.columns if c not in ("id", TARGET)]
 
-    orig = load_original()[features + [TARGET]] if args.original else None
-    tag = "lgb_orig" if args.original else "lgb_base"
+    orig = load_original()[features + [TARGET]] if use_orig else None
+    if args.orig_flag:
+        # Plain append hurt CV on all 5 folds (0.95903 -> 0.95868). The
+        # indicator lets trees condition on provenance; test rows are all 0.
+        train["is_original"] = 0
+        test["is_original"] = 0
+        orig["is_original"] = 1
+        features = features + ["is_original"]
+    tag = "lgb_origflag" if args.orig_flag else ("lgb_orig" if args.original else "lgb_base")
     print(f"train {train.shape} | test {test.shape}"
           + (f" | original {orig.shape}" if orig is not None else ""))
 
