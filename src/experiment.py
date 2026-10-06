@@ -132,6 +132,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", choices=RUNNERS, required=True)
     ap.add_argument("--fe", action="store_true", help="add engineered features")
+    ap.add_argument("--ratings-cat", action="store_true",
+                    help="treat the 0-5 survey ratings as categorical rather than "
+                         "ordinal, so trees can isolate 0 = 'not applicable'")
     ap.add_argument("--lr", type=float, default=0.03)
     ap.add_argument("--tag", default=None)
     args = ap.parse_args()
@@ -143,6 +146,10 @@ def main():
         train, test = add_features(train), add_features(test)
 
     cats = CATS + (["travel_class", "loyal_travel"] if args.fe else [])
+    if args.ratings_cat:
+        # Keep the numeric copies too when --fe is on: the aggregates were
+        # computed from them and the ordinal signal is still real.
+        cats = cats + RATINGS
     features = [c for c in train.columns if c not in ("id", TARGET)]
     levels = {c: sorted(pd.concat([train[c], test[c]]).astype(str).unique()) for c in cats}
     for df in (train, test):

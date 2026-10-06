@@ -15,6 +15,8 @@
 | `lgb_base` | 0.95903 | **0.95840** | lr 0.05, 127 leaves, ~285 rounds. **CV runs ~0.0006 optimistic.** |
 | `lgb_orig` | 0.95868 | — | original rows appended. **Worse on all 5 folds** (−0.00035). |
 | `lgb_origflag` | 0.95906 | — | + `is_original` indicator. +0.00003, mixed fold signs — a wash. **Original data dropped.** |
+| `lgb_fe_lr0.03` | 0.95889 | — | engineered features + lr 0.03 + ff 0.7 + l2 2.0. **Worse on 4/5 folds.** Confounded — too many changes at once; ablating. |
+| `xgb_fe_lr0.03` | 0.95869 | — | XGBoost, same features. Blend member. |
 
 Leaderboard top: 0.96177. Gap from baseline LB: **0.0034**.
 
