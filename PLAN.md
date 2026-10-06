@@ -1,6 +1,6 @@
 # Plan — Predicting Airline Satisfaction (PS S6E10)
 
-**Status as of 6 Oct 2026.** Public LB **0.96056**, rank **350 / 936**. Deadline **31 Oct**
+**Status as of 6 Oct 2026.** Public LB **0.96057**, rank **349 / 944**. GBDT family saturated at ~0.9613 CV / ~0.9606 LB. Deadline **31 Oct**
 (25 days). 10 submissions/day, max team size 3, file-upload submissions.
 
 ## Done
@@ -30,7 +30,7 @@
 | `lgb_te_freq_teacher_digits_f10` (Kaggle CPU) | **0.96076** | — | 10 folds + digits: +0.00017 over the 5-fold run. 25 min for both models. |
 | `xgb_te_freq_teacher_digits_f10` (Kaggle CPU) | **0.96074** | — | XGBoost with TE: 0.95869 → 0.96074. Strong second family. |
 | `cat_crosses_teacher_s7` / `_s2026` (GPU) | 0.96113 / 0.96112 | — | two more seeds, 67 min. Within 0.00005 of seed 42 — stable. |
-| **`blend` 3×CatBoost + LGB-f10** | **0.96129** | submitted | rank blend = LR stacker (tie). 3-seed CatBoost alone 0.96122. **GBDT family saturated: +0.00002/step.** |
+| **`blend` 3×CatBoost + LGB-f10** | **0.96129** | **0.96057** | rank blend = LR stacker (tie). 3-seed CatBoost alone 0.96122. **GBDT family saturated: +0.00002/step.** |
 | `stack_lr` (10 members) | 0.96127 | not submitted | +0.00006 with the 10-fold members. Holding for CatBoost seeds to submit one larger step. |
 | `lgb_*_digits` (local) | killed ×2 | — | starved: machine load 15 from Chrome/NordVPN/VS Code, not from training. Retry when the machine is free, or on Kaggle. |
 | `cat_fe_lr0.05` | killed | — | 2/5 folds (0.95866, 0.95755) in 14 min under CPU contention; would have hit the 30-min limit. Relaunched alone, no features, lr 0.1. |
@@ -46,8 +46,17 @@ Leaderboard top: 0.96177. Gap from current LB: **0.0012**.
 4. **Model diversity** — XGBoost with TE+teacher locally (rerun alone);
    CatBoost with categorical numeric copies + 39 crosses on **Kaggle GPU**
    (`notebooks/catboost_crosses.py`, pushed 6 Oct). Then LR-on-logits stack.
-5. ~~10 folds~~ done on Kaggle: +0.00017. **Tuning** — Optuna on CatBoost
-   once seeds are in; GBDT members otherwise saturated.
+5. ~~10 folds~~ done: +0.00017. ~~Seeds~~ done: +0.00002. **GBDT saturated.**
+
+## Decision point (6 Oct, 23:20)
+Four submissions moved LB 0.95840 → 0.96057; the last two steps were +0.00001.
+Leader 0.96177, gap 0.0012. Per the stacking thread, what still adds:
+- **TabPFN-3.5 / TabICL members** (+0.0001 to the stack) — need offline weights
+  on Kaggle Models; uncertain availability, non-trivial.
+- **Public OOF libraries** on the identical split — the 119-member public stack
+  reaches 0.96163 LB. Legal and invited by its author, but it is riding on
+  others' models. User's call.
+- Everything GBDT-shaped: +0.00001–0.00003 per member. Not worth more compute.
 
 ## Ruled out (checked, 6 Oct)
 - **No leak.** 0 exact duplicate feature-rows within train or train↔test;
