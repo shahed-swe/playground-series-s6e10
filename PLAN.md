@@ -29,6 +29,8 @@
 | **`stack_lr`** (8 members, nested CV) | **0.96121** | **0.96056** | LR on logits; CatBoost weight 0.78. +0.00004 over CatBoost alone — GBDT members saturated. |
 | `lgb_te_freq_teacher_digits_f10` (Kaggle CPU) | **0.96076** | — | 10 folds + digits: +0.00017 over the 5-fold run. 25 min for both models. |
 | `xgb_te_freq_teacher_digits_f10` (Kaggle CPU) | **0.96074** | — | XGBoost with TE: 0.95869 → 0.96074. Strong second family. |
+| `cat_crosses_teacher_s7` / `_s2026` (GPU) | 0.96113 / 0.96112 | — | two more seeds, 67 min. Within 0.00005 of seed 42 — stable. |
+| **`blend` 3×CatBoost + LGB-f10** | **0.96129** | submitted | rank blend = LR stacker (tie). 3-seed CatBoost alone 0.96122. **GBDT family saturated: +0.00002/step.** |
 | `stack_lr` (10 members) | 0.96127 | not submitted | +0.00006 with the 10-fold members. Holding for CatBoost seeds to submit one larger step. |
 | `lgb_*_digits` (local) | killed ×2 | — | starved: machine load 15 from Chrome/NordVPN/VS Code, not from training. Retry when the machine is free, or on Kaggle. |
 | `cat_fe_lr0.05` | killed | — | 2/5 folds (0.95866, 0.95755) in 14 min under CPU contention; would have hit the 30-min limit. Relaunched alone, no features, lr 0.1. |
