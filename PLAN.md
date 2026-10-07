@@ -1,7 +1,13 @@
 # Plan — Predicting Airline Satisfaction (PS S6E10)
 
-**Status as of 6 Oct 2026.** Public LB **0.96057**, rank **349 / 944**. GBDT family saturated at ~0.9613 CV / ~0.9606 LB. Deadline **31 Oct**
+**Status as of 7 Oct 2026.** Public LB **0.96174**, rank **44 / 988**. Leader 0.96177 — within public-split noise of the top. Deadline **31 Oct**
 (25 days). 10 submissions/day, max team size 3, file-upload submissions.
+
+## Needs your action
+
+| # | Item | Deadline | Why |
+|---|---|---|---|
+| 1 | **Select 2 final submissions**: `pubstack` (0.96174) and the own-model blend (0.96057) | 31 Oct | The stack is the score; the blend is the hedge — if 137-member stacking turns out to have fit the public split, a clean own-model entry still stands. Explicit selection avoids auto-select surprises. |
 
 ## Done
 - Entered. Data downloaded and profiled (clean, no real missingness).
@@ -31,12 +37,12 @@
 | `xgb_te_freq_teacher_digits_f10` (Kaggle CPU) | **0.96074** | — | XGBoost with TE: 0.95869 → 0.96074. Strong second family. |
 | `cat_crosses_teacher_s7` / `_s2026` (GPU) | 0.96113 / 0.96112 | — | two more seeds, 67 min. Within 0.00005 of seed 42 — stable. |
 | **`blend` 3×CatBoost + LGB-f10** | **0.96129** | **0.96057** | rank blend = LR stacker (tie). 3-seed CatBoost alone 0.96122. **GBDT family saturated: +0.00002/step.** |
-| **`pubstack`** 137 members (ours 12 + Deotte's 124 public + 11 TFM) | **0.96210** | submitted | Option A. All 177 candidates passed the leak gate (none > 0.9625); 40 collapsed as near-duplicates. Top weights: RealMLP, TabFM, LimiX — NN/foundation models, not GBDTs. Best single public member 0.96174. |
+| **`pubstack`** 137 members (ours 12 + Deotte's 124 public + 11 TFM) | **0.96210** | **0.96174** | Option A. All 177 candidates passed the leak gate (none > 0.9625); 40 collapsed as near-duplicates. Top weights: RealMLP, TabFM, LimiX — NN/foundation models, not GBDTs. Best single public member 0.96174. |
 | `stack_lr` (10 members) | 0.96127 | not submitted | +0.00006 with the 10-fold members. Holding for CatBoost seeds to submit one larger step. |
 | `lgb_*_digits` (local) | killed ×2 | — | starved: machine load 15 from Chrome/NordVPN/VS Code, not from training. Retry when the machine is free, or on Kaggle. |
 | `cat_fe_lr0.05` | killed | — | 2/5 folds (0.95866, 0.95755) in 14 min under CPU contention; would have hit the 30-min limit. Relaunched alone, no features, lr 0.1. |
 
-Leaderboard top: 0.96177. Gap from current LB: **0.0012**.
+Leaderboard top: 0.96177. Gap from current LB: **0.00003**.
 
 ## Next, in order
 1. ~~Baseline~~ done; LB score pending for CV calibration.

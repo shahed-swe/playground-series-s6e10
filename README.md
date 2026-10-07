@@ -32,9 +32,18 @@ Playground gain and the first thing to test.
 | LightGBM baseline | 0.95903 | 0.95840 |
 | LightGBM + in-fold TE + freq + teacher | 0.96059 | 0.96017 |
 | CatBoost crosses + teacher (Kaggle GPU) | 0.96117 | — |
-| **LR stack, 8 members (nested CV)** | **0.96121** | **0.96056** |
+| LR stack, 8 own members (nested CV) | 0.96121 | 0.96056 |
+| 3-seed CatBoost + 10-fold LGB blend | 0.96129 | 0.96057 |
+| **LR stack, 137 members: ours + public OOF libraries** | **0.96210** | **0.96174** |
 
-Rank **350 / 936** as of 6 Oct. Leader 0.96177.
+Rank **44 / 988** as of 7 Oct. Leader 0.96177.
+
+The final step stacks the public OOF libraries — chiefly Chris Deotte's
+124-member aggregation and his tabular-foundation-model members — with our own
+12 members, all on the identical CV split. Every member is gated on a plausible
+OOF AUC (a leaked member would look superb in CV and sink the board), near-
+duplicates are collapsed, and the stacker is scored by nested CV. Credit for the
+members belongs to their authors; see PLAN.md.
 
 ## What moved the score
 
