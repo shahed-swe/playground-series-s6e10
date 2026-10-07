@@ -7,7 +7,7 @@
 
 | # | Item | Deadline | Why |
 |---|---|---|---|
-| 1 | **Select 2 final submissions**: `pubstack` (0.96174) and the own-model blend (0.96057) | 31 Oct | The stack is the score; the blend is the hedge — if 137-member stacking turns out to have fit the public split, a clean own-model entry still stands. Explicit selection avoids auto-select surprises. |
+| 1 | ~~Select 2 final submissions~~ | ~~31 Oct~~ | **DONE 7 Oct** — `pubstack` (0.96174) + own-model blend (0.96057) selected. | The stack is the score; the blend is the hedge — if 137-member stacking turns out to have fit the public split, a clean own-model entry still stands. Explicit selection avoids auto-select surprises. |
 
 ## Done
 - Entered. Data downloaded and profiled (clean, no real missingness).
